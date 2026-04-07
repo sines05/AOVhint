@@ -29,7 +29,7 @@ const API_BASE_URL = window.location.hostname === 'localhost' || window.location
   : (import.meta.env.VITE_API_URL || 'https://aov-draft-api.aov-hint.workers.dev');
 
 const AISuggestion: React.FC = () => {
-  const { teamBlue, teamRed, banned, currentStepIndex, addHeroToDraft } = useDraftStore();
+  const { teamBlue, teamRed, banned, currentStepIndex, addHeroToDraft, getCurrentStep } = useDraftStore();
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [neuralPicks, setNeuralPicks] = useState<NeuralPick[]>([]);
   const [missingRoles, setMissingRoles] = useState<string[]>([]);
@@ -60,12 +60,11 @@ const AISuggestion: React.FC = () => {
       }
       abortControllerRef.current = new AbortController();
 
+      const currentStep = getCurrentStep();
       const isFinal = teamBlue.length === 5 && teamRed.length === 5;
 
-      // AI LOGIC: Activate AI whenever draft has any picks or is in final state
-      // This keeps neural analysis up-to-date after every pick/ban change
-      const hasDraftActivity = teamBlue.length > 0 || teamRed.length > 0 || banned.length > 0;
-      const shouldInvolveAI = isFinal || hasDraftActivity;
+      // AI chỉ kích hoạt khi đến lượt Blue pick hoặc khi draft kết thúc
+      const shouldInvolveAI = isFinal || (currentStep && currentStep.team === 'blue' && currentStep.type === 'pick');
 
       // Step 1: Rapid Algorithmic Sync (Always run to keep UI snappy)
       setIsRecsLoading(true);
