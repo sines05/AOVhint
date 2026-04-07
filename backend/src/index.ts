@@ -55,7 +55,7 @@ export default {
       const top24 = allRecs.slice(0, 24);
       const isFinal = teamBlue.length === 5 && teamRed.length === 5;
       const missingRoles = getMissingRoles(teamBlue);
-      let aiResponseData: any = { recommendations: top6, aiAdvice: {}, isFinal };
+      let aiResponseData: any = { recommendations: top6, missingRoles, aiAdvice: {}, isFinal };
 
       // 2. Call Gemma 3 if requested
       if (includeAI && env.GEMINI_API_KEY) {
@@ -148,25 +148,46 @@ export default {
           if (aiResponse.ok) {
             const aiData = await aiResponse.json() as any;
             const rawText = aiData.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
-            const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+            console.log("[AI] Raw response length:", rawText.length);
+            
+            // Refined JSON extraction: Handles markdown backticks and extra text
+            const cleanedText = rawText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+            const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
+            
             if (jsonMatch) {
-              const parsed = JSON.parse(jsonMatch[0]);
-              
-              if (isFinal) {
-                aiResponseData = {
-                  isFinal: true,
-                  forecast: parsed.forecast || {}
-                };
-              } else {
-                aiResponseData = {
-                  recommendations: top6,
-                  missingRoles,
-                  aiSummary: parsed.summary,
-                  neuralPicks: parsed.neural_picks || [],
-                  aiAdvice: parsed.advice || {}
-                };
+              try {
+                const parsed = JSON.parse(jsonMatch[0]);
+                console.log("[AI] Parsed keys:", Object.keys(parsed));
+                
+                if (isFinal) {
+                  aiResponseData = {
+                    ...aiResponseData,
+                    isFinal: true,
+                    forecast: parsed.forecast || {
+                      win_rate: 50,
+                      summary: "Không thể tính toán dự báo chi tiết.",
+                      win_conditions: [],
+                      danger_alerts: []
+                    }
+                  };
+                } else {
+                  aiResponseData = {
+                    ...aiResponseData,
+                    aiSummary: parsed.summary || "",
+                    neuralPicks: parsed.neural_picks || [],
+                    aiAdvice: parsed.advice || {}
+                  };
+                }
+              } catch (parseErr) {
+                console.error("[AI] JSON Parse Error:", parseErr);
+                console.error("[AI] Raw text:", rawText.substring(0, 500));
               }
+            } else {
+              console.error("[AI] No JSON found in response:", rawText.substring(0, 300));
             }
+          } else {
+            const errorBody = await aiResponse.text();
+            console.error(`[AI] API Error ${aiResponse.status}:`, errorBody.substring(0, 300));
           }
         } catch (aiErr) {
           console.error("AI Error:", aiErr);

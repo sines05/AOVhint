@@ -29,7 +29,7 @@ const API_BASE_URL = window.location.hostname === 'localhost' || window.location
   : (import.meta.env.VITE_API_URL || 'https://aov-draft-api.aov-hint.workers.dev');
 
 const AISuggestion: React.FC = () => {
-  const { teamBlue, teamRed, banned, addHeroToDraft, getCurrentStep } = useDraftStore();
+  const { teamBlue, teamRed, banned, currentStepIndex, addHeroToDraft, getCurrentStep } = useDraftStore();
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [neuralPicks, setNeuralPicks] = useState<NeuralPick[]>([]);
   const [missingRoles, setMissingRoles] = useState<string[]>([]);
@@ -97,6 +97,9 @@ const AISuggestion: React.FC = () => {
           });
           const data = await response.json();
 
+          if (data.recommendations) setRecommendations(data.recommendations);
+          if (data.missingRoles) setMissingRoles(data.missingRoles);
+
           if (data.isFinal && data.forecast) {
             setForecast(data.forecast);
             setAiSummary(data.forecast.summary);
@@ -104,7 +107,6 @@ const AISuggestion: React.FC = () => {
             setAiAdvice(data.aiAdvice || {});
             setAiSummary(data.aiSummary || "");
             setNeuralPicks(data.neuralPicks || []);
-            if (data.missingRoles) setMissingRoles(data.missingRoles);
             setForecast(null);
           }
         } catch (error: any) {
@@ -120,9 +122,9 @@ const AISuggestion: React.FC = () => {
     return () => {
       if (abortControllerRef.current) abortControllerRef.current.abort();
     };
-  }, [teamBlue, teamRed, banned]);
+  }, [teamBlue, teamRed, banned, currentStepIndex]);
 
-  if (recommendations.length === 0 && !isRecsLoading && !forecast) return null;
+  if (recommendations.length === 0 && !isRecsLoading && !forecast && !isAIThinking) return null;
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-surface-container-low/50 relative overflow-hidden backdrop-blur-sm">

@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// .wrangler/tmp/bundle-dUh0EX/checked-fetch.js
+// .wrangler/tmp/bundle-Mheskb/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -27,7 +27,7 @@ globalThis.fetch = new Proxy(globalThis.fetch, {
   }
 });
 
-// .wrangler/tmp/bundle-dUh0EX/strip-cf-connecting-ip-header.js
+// .wrangler/tmp/bundle-Mheskb/strip-cf-connecting-ip-header.js
 function stripCfConnectingIPHeader(input, init) {
   const request = new Request(input, init);
   request.headers.delete("CF-Connecting-IP");
@@ -4005,7 +4005,7 @@ var src_default = {
       const top24 = allRecs.slice(0, 24);
       const isFinal = teamBlue.length === 5 && teamRed.length === 5;
       const missingRoles = getMissingRoles(teamBlue);
-      let aiResponseData = { recommendations: top6, aiAdvice: {}, isFinal };
+      let aiResponseData = { recommendations: top6, missingRoles, aiAdvice: {}, isFinal };
       if (includeAI && env.GEMINI_API_KEY) {
         try {
           const allyInfo = teamBlue.map((id) => {
@@ -4090,24 +4090,42 @@ var src_default = {
           if (aiResponse.ok) {
             const aiData = await aiResponse.json();
             const rawText = aiData.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
-            const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+            console.log("[AI] Raw response length:", rawText.length);
+            const cleanedText = rawText.replace(/```json\n?/g, "").replace(/```\n?/g, "");
+            const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
-              const parsed = JSON.parse(jsonMatch[0]);
-              if (isFinal) {
-                aiResponseData = {
-                  isFinal: true,
-                  forecast: parsed.forecast || {}
-                };
-              } else {
-                aiResponseData = {
-                  recommendations: top6,
-                  missingRoles,
-                  aiSummary: parsed.summary,
-                  neuralPicks: parsed.neural_picks || [],
-                  aiAdvice: parsed.advice || {}
-                };
+              try {
+                const parsed = JSON.parse(jsonMatch[0]);
+                console.log("[AI] Parsed keys:", Object.keys(parsed));
+                if (isFinal) {
+                  aiResponseData = {
+                    ...aiResponseData,
+                    isFinal: true,
+                    forecast: parsed.forecast || {
+                      win_rate: 50,
+                      summary: "Kh\xF4ng th\u1EC3 t\xEDnh to\xE1n d\u1EF1 b\xE1o chi ti\u1EBFt.",
+                      win_conditions: [],
+                      danger_alerts: []
+                    }
+                  };
+                } else {
+                  aiResponseData = {
+                    ...aiResponseData,
+                    aiSummary: parsed.summary || "",
+                    neuralPicks: parsed.neural_picks || [],
+                    aiAdvice: parsed.advice || {}
+                  };
+                }
+              } catch (parseErr) {
+                console.error("[AI] JSON Parse Error:", parseErr);
+                console.error("[AI] Raw text:", rawText.substring(0, 500));
               }
+            } else {
+              console.error("[AI] No JSON found in response:", rawText.substring(0, 300));
             }
+          } else {
+            const errorBody = await aiResponse.text();
+            console.error(`[AI] API Error ${aiResponse.status}:`, errorBody.substring(0, 300));
           }
         } catch (aiErr) {
           console.error("AI Error:", aiErr);
@@ -4172,7 +4190,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-dUh0EX/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-Mheskb/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -4204,7 +4222,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-dUh0EX/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-Mheskb/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
