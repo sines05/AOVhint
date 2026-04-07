@@ -132,7 +132,7 @@ const AISuggestion: React.FC = () => {
         <div className="flex items-center gap-2">
           <BrainCircuit className={cn("w-4 h-4", isAIThinking ? "text-primary-container animate-pulse" : "text-tertiary-fixed-dim")} />
           <h4 className="font-headline font-black text-[10px] text-on-surface tracking-[0.2em] uppercase">
-            {forecast ? 'Neural Match Forecast' : 'Tactical Neural Link'}
+            {forecast ? 'Neural Match Analysis' : 'Tactical Neural Link'}
           </h4>
         </div>
         <div className="flex items-center gap-2">
@@ -157,7 +157,7 @@ const AISuggestion: React.FC = () => {
               {/* Victory Rate Meter */}
               <div className="bg-black/40 p-6 clip-path-chamfer border border-primary-container/30 text-center relative overflow-hidden">
                 <div className="absolute inset-0 bg-primary-container/5 animate-pulse" />
-                <h5 className="font-headline font-black text-[10px] uppercase tracking-[0.3em] text-primary-container mb-4">Predicted Win Probability</h5>
+                <h5 className="font-headline font-black text-[10px] uppercase tracking-[0.3em] text-primary-container mb-4">Dự báo Tương Quan Lực Lượng</h5>
                 <div className="flex items-center justify-center gap-4">
                   <div className="relative w-32 h-32 flex items-center justify-center">
                     <svg className="w-full h-full transform -rotate-90">
@@ -172,7 +172,7 @@ const AISuggestion: React.FC = () => {
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                       <span className="font-headline font-black text-4xl text-white">{forecast.win_rate}%</span>
-                      <span className="font-label text-[8px] text-primary-container uppercase tracking-tight">Ally Victory</span>
+                      <span className="font-label text-[8px] text-primary-container uppercase tracking-tight">Cơ hội Thắng (Blue)</span>
                     </div>
                   </div>
                 </div>
@@ -190,7 +190,7 @@ const AISuggestion: React.FC = () => {
                 <div className="bg-primary-container/10 p-4 border border-primary-container/20 space-y-3">
                   <div className="flex items-center gap-2 text-primary-container">
                     <Trophy className="w-4 h-4" />
-                    <span className="font-headline font-black text-[10px] uppercase tracking-widest">Win Conditions</span>
+                    <span className="font-headline font-black text-[10px] uppercase tracking-widest">Key Win Conditions (Blue/Red)</span>
                   </div>
                   <ul className="space-y-2">
                     {forecast.win_conditions.map((cond, i) => (
@@ -205,7 +205,7 @@ const AISuggestion: React.FC = () => {
                 <div className="bg-error-container/10 p-4 border border-error-container/20 space-y-3">
                   <div className="flex items-center gap-2 text-error-container">
                     <ShieldAlert className="w-4 h-4" />
-                    <span className="font-headline font-black text-[10px] uppercase tracking-widest text-error-container">Threat Mitigation</span>
+                    <span className="font-headline font-black text-[10px] uppercase tracking-widest text-error-container">Cảnh Báo Chiến Thuật (Blue)</span>
                   </div>
                   <ul className="space-y-2">
                     {forecast.danger_alerts.map((alert, i) => (

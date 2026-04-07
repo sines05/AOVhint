@@ -231,7 +231,9 @@ export const getDetailedMatchupWeights = (teamBlueIds: string[], teamRedIds: str
         base_power: Math.round(basePower),
         counter_advantage: counterScore,
         synergy_impact: synergyScore,
-        roles: hero.role
+        roles: hero.role,
+        meta_data: hero.meta_data,
+        stats: hero.stats
       };
     });
   };
