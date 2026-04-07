@@ -16,24 +16,34 @@ const getTacticalTags = (hero: Hero): string[] => {
   if (text.includes("lướt") || text.includes("tốc chạy")) tags.push("Cơ động");
   if (text.includes("miễn khống") || text.includes("miễn thương")) tags.push("Miễn khống/thương");
   if (text.includes("xuyên giáp") || text.includes("máu tối đa")) tags.push("Diệt Tank");
-  
   return tags;
+};
+
+const getCorsHeaders = (request: Request) => {
+  const origin = request.headers.get("Origin") || "*";
+  return {
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Max-Age": "86400",
+  };
 };
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    const corsHeaders = getCorsHeaders(request);
+    
     if (request.method === "OPTIONS") {
       return new Response(null, {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type",
-        },
+        headers: corsHeaders,
       });
     }
 
     if (request.method !== "POST") {
-      return new Response("Method Not Allowed", { status: 405 });
+      return new Response("Method Not Allowed", { 
+        status: 405,
+        headers: corsHeaders
+      });
     }
 
     try {
@@ -164,13 +174,19 @@ export default {
       }
 
       return new Response(JSON.stringify(aiResponseData), {
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+        headers: { 
+          "Content-Type": "application/json",
+          ...corsHeaders
+        },
       });
 
     } catch (err: any) {
       return new Response(JSON.stringify({ error: err.message }), {
         status: 500,
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+        headers: { 
+          "Content-Type": "application/json",
+          ...corsHeaders
+        },
       });
     }
   },
