@@ -59,39 +59,41 @@ export default {
             const h = heroes.find(x => x.id === id);
             return h ? `${h.name} (${h.role.join('/')}) [Tags: ${getTacticalTags(h).join(', ')}]` : id;
           }).join(', ');
-
           let prompt = "";
 
           if (isFinal) {
-            // NWRP V1: NEURAL WIN-RATE PROTOCOL
             const weights = getDetailedMatchupWeights(teamBlue, teamRed);
-            
-            prompt = `Bạn là HLV Esports chuyên nghiệp đỉnh cao của Liên Quân Mobile.
-                      TRẬN ĐẤU ĐÃ CHỐT ĐỘI HÌNH. Hãy tính tỷ lệ thắng bằng Giao thức NWRP V1.
+                    prompt = `Bạn là một Chuyên gia phân tích dữ liệu Esports khách quan, chuyên sâu về Liên Quân Mobile.
+                      TRẬN ĐẤU ĐÃ CHỐT ĐỘI HÌNH. Hãy cung cấp một bản phân tích Trận đấu (Match Forecast) trung lập và chính xác cao bằng Giao thức NWRP V2.
 
-                      CÔNG THỨC NWRP V1:
-                      WinRate_Ally = (Base_Power_Score * 0.4) + (Counter_Advantage_Score * 0.4) + (Synergy_Balance_Score * 0.2)
-                      *Lưu ý: Điểm số chuẩn hóa về thang 100.
+                      CÔNG THỨC NWRP V2 (Neural Win-Rate Protocol):
+                      WinRate = (ΣPower_Base * 0.25) + (ΣMatchup_Diff * 0.35) + (ΣSynergy_Impact * 0.25) + (Meta_Balance * 0.15)
+                      *Trong đó:*
+                      - Power_Base: Dựa trên win_rate, pick_rate và stats cơ bản.
+                      - Matchup_Diff: Dựa trên counter_advantage (đưa vào win_rate để chuẩn hóa).
+                      - Synergy_Impact: Dựa trên sự bù đắp vai trò (missing roles) và synergy_impact.
 
-                      DỮ LIỆU CHI TIẾT CỦA 10 TƯỚNG (WEIGHTS TABLE):
-                      PHE TA (ALLY):
+                      CƠ SỞ DỮ LIỆU THỰC TẾ (Raw Parameters):
+                      PHE BLUE (ALLY):
                       ${JSON.stringify(weights.blue, null, 2)}
 
-                      PHE ĐỊCH (ENEMY):
+                      PHE RED (ENEMY):
                       ${JSON.stringify(weights.red, null, 2)}
 
                       NHIỆM VỤ CỦA BẠN:
-                      1. Tính toán Tỷ lệ thắng % cho Ally dựa trên bảng dữ liệu và công thức trên.
-                      2. Giải trình ngắn gọn các con số quan trọng trong summary.
-                      3. Đưa ra 3 Win Conditions và 2 Danger Alerts.
+                      1. Thực hiện phép tính theo NWRP V2 dựa trên dữ liệu thô ở trên.
+                      2. Đánh giá khách quan cán cân sức mạnh (Probability Balance %) cho phí Blue.
+                      3. Viết Summary (tối đa 60 chữ) chỉ ra tham số nào ảnh hưởng nhất đến con số cuối cùng (Vd: "Tỷ lệ thắng cao hơn 5% nhờ chỉ số Counter Advantage của Hayate đối với Baldum...").
+                      4. Đưa ra 2 Win Conditions cho Blue và 2 Win Conditions cho Red.
+                      5. Đưa ra 2 Danger Alerts cho Blue (Threat mitigation).
 
                       YÊU CẦU TRẢ VỀ JSON:
                       {
                         "forecast": {
                           "win_rate": 55,
-                          "summary": "Giải trình toán học & chiến thuật (60 chữ)...",
-                          "win_conditions": [...],
-                          "danger_alerts": [...]
+                          "summary": "Phân tích số liệu thực tế theo NWRP V2...",
+                          "win_conditions": ["Blue:...", "Blue:...", "Red:...", "Red:..."],
+                          "danger_alerts": ["...", "..."]
                         }
                       }`;
           } else {
