@@ -1,6 +1,6 @@
 # ⚔️ AOV-HINT: Hướng dẫn BAN/PICK Liên quân⚡
 
-### 🌐 Dùng luôn: [https://aov-hint.pages.dev/](https://aov-hint.pages.dev/)
+### 🌐 Dùng luôn: [https://aovhint.pages.dev/](https://aovhint.pages.dev/)
 
 ---
   Game liên quân win/lose dựa vào 70% ban/pick
