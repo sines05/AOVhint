@@ -1,0 +1,8 @@
+{
+  "name": "aov-draft-api",
+  "version": "1.0.0",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250224.0",
+    "wrangler": "^3.111.0"
+  }
+}
