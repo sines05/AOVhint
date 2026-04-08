@@ -24,9 +24,9 @@ interface VictoryForecast {
   danger_alerts: string[];
 }
 
-const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:8787'
-  : (import.meta.env.VITE_API_URL || 'https://aov-draft-api.aov-hint.workers.dev');
+  : (import.meta.env.VITE_API_URL || 'https://aov-draft-api.aov-hint.workers.dev')).replace(/\/+$/, '');
 
 const AISuggestion: React.FC = () => {
   const { teamBlue, teamRed, banned, currentStepIndex, addHeroToDraft, getCurrentStep } = useDraftStore();

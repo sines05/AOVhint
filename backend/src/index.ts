@@ -26,6 +26,7 @@ const getCorsHeaders = (request: Request) => {
     "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Access-Control-Max-Age": "86400",
+    "Vary": "Origin",
   };
 };
 
@@ -33,9 +34,19 @@ export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const corsHeaders = getCorsHeaders(request);
     
+    const url = new URL(request.url);
+    const path = url.pathname.replace(/\/+$/, ''); // Basic normalization
+    
     if (request.method === "OPTIONS") {
       return new Response(null, {
         headers: corsHeaders,
+      });
+    }
+
+    if (path !== "/recommend") {
+      return new Response("Not Found", { 
+        status: 404,
+        headers: corsHeaders
       });
     }
 
@@ -73,37 +84,35 @@ export default {
 
           if (isFinal) {
             const weights = getDetailedMatchupWeights(teamBlue, teamRed);
-                    prompt = `Bạn là một Chuyên gia phân tích dữ liệu Esports khách quan, chuyên sâu về Liên Quân Mobile.
-                      TRẬN ĐẤU ĐÃ CHỐT ĐỘI HÌNH. Hãy cung cấp một bản phân tích Trận đấu (Match Forecast) trung lập và chính xác cao bằng Giao thức NWRP V2.
+                    prompt = `Bạn là Chuyên gia phân tích dữ liệu Esports khách quan, chuyên sâu về Liên Quân Mobile.
+                      TRẬN ĐẤU ĐÃ CHỐT ĐỘI HÌNH. Phân tích Match Forecast trung lập bằng NWRP V2.
 
-                      CÔNG THỨC NWRP V2 (Neural Win-Rate Protocol):
-                      WinRate = (ΣPower_Base * 0.25) + (ΣMatchup_Diff * 0.35) + (ΣSynergy_Impact * 0.25) + (Meta_Balance * 0.15)
-                      *Trong đó:*
-                      - Power_Base: Dựa trên win_rate, pick_rate và stats cơ bản.
-                      - Matchup_Diff: Dựa trên counter_advantage (đưa vào win_rate để chuẩn hóa).
-                      - Synergy_Impact: Dựa trên sự bù đắp vai trò (missing roles) và synergy_impact.
+                      NGUYÊN TẮC: Bạn KHÔNG đứng về phe nào. Phân tích hoàn toàn dựa trên dữ liệu.
 
-                      CƠ SỞ DỮ LIỆU THỰC TẾ (Raw Parameters):
-                      PHE BLUE (ALLY):
+                      CÔNG THỨC NWRP V2:
+                      WinRate_Blue = (ΣPower_Base * 0.25) + (ΣMatchup_Diff * 0.35) + (ΣSynergy_Impact * 0.25) + (Meta_Balance * 0.15)
+                      WinRate_Red = 100 - WinRate_Blue
+
+                      DỮ LIỆU ĐỘI HÌNH:
+                      ĐỘI BLUE:
                       ${JSON.stringify(weights.blue, null, 2)}
 
-                      PHE RED (ENEMY):
+                      ĐỘI RED:
                       ${JSON.stringify(weights.red, null, 2)}
 
-                      NHIỆM VỤ CỦA BẠN:
-                      1. Thực hiện phép tính theo NWRP V2 dựa trên dữ liệu thô ở trên.
-                      2. Đánh giá khách quan cán cân sức mạnh (Probability Balance %) cho phí Blue.
-                      3. Viết Summary (tối đa 60 chữ) chỉ ra tham số nào ảnh hưởng nhất đến con số cuối cùng (Vd: "Tỷ lệ thắng cao hơn 5% nhờ chỉ số Counter Advantage của Hayate đối với Baldum...").
-                      4. Đưa ra 2 Win Conditions cho Blue và 2 Win Conditions cho Red.
-                      5. Đưa ra 2 Danger Alerts cho Blue (Threat mitigation).
+                      YÊU CẦU:
+                      1. Tính NWRP V2 dựa trên dữ liệu thô, đưa ra win_rate cho Blue (Red = 100 - Blue).
+                      2. Summary (tối đa 60 chữ): chỉ ra yếu tố quyết định nhất ảnh hưởng đến cán cân, viết trung lập.
+                      3. Win Conditions: 2 cho Blue, 2 cho Red — mỗi bên đều có cơ hội.
+                      4. Danger Alerts: 1 cho Blue, 1 cho Red — rủi ro lớn nhất mỗi bên cần đề phòng.
 
-                      YÊU CẦU TRẢ VỀ JSON:
+                      TRẢ VỀ JSON DUY NHẤT:
                       {
                         "forecast": {
                           "win_rate": 55,
-                          "summary": "Phân tích số liệu thực tế theo NWRP V2...",
-                          "win_conditions": ["Blue:...", "Blue:...", "Red:...", "Red:..."],
-                          "danger_alerts": ["...", "..."]
+                          "summary": "Phân tích trung lập dựa trên dữ liệu...",
+                          "win_conditions": ["Blue: ...", "Blue: ...", "Red: ...", "Red: ..."],
+                          "danger_alerts": ["Blue cần đề phòng: ...", "Red cần đề phòng: ..."]
                         }
                       }`;
           } else {
